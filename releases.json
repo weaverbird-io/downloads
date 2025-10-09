@@ -1,0 +1,15 @@
+{
+  "software": [
+    {
+      "id": "weaverbird-cli",
+      "name": "WeaverBird CLI",
+      "description": "Command-line interface for managing WeaverBird infrastructure. Deploy, monitor, and scale your applications with ease.",
+      "icon": "🕊️",
+      "color": "weaver-primary",
+      "repo": "weaverbird-io/downloads",
+      "platforms": ["linux-amd64", "linux-arm64"],
+      "installCommand": "curl -fsSL https://weaverbird-io.github.io/downloads/install.sh | sh",
+      "featured": true
+    }
+  ]
+}
