@@ -50,16 +50,6 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Merge to master
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git fetch origin master
-          git checkout master
-          git merge --no-ff origin/${GITHUB_REF#refs/heads/} -m "Merge release branch for CLI v${{ steps.version.outputs.version }}"
-          git push origin master
-
       - name: Delete release branch
         run: |
           git push origin --delete ${GITHUB_REF#refs/heads/}
