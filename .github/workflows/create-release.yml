@@ -1,0 +1,65 @@
+name: Create Release from CLI Build
+
+on:
+  push:
+    branches:
+      - 'cli-release-*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout downloads repo
+        uses: actions/checkout@v4
+
+      - name: Extract version from branch name
+        id: version
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          VERSION=${BRANCH_NAME#cli-release-}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+
+      - name: Read release info
+        id: release-info
+        run: |
+          if [ -f "releases/cli/${{ steps.version.outputs.version }}/release-info.json" ]; then
+            NOTES=$(jq -r '.notes' releases/cli/${{ steps.version.outputs.version }}/release-info.json)
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            echo "$NOTES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "notes=Release ${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: cli-v${{ steps.version.outputs.version }}
+          name: WeaverBird CLI v${{ steps.version.outputs.version }}
+          body: ${{ steps.release-info.outputs.notes }}
+          files: |
+            releases/cli/${{ steps.version.outputs.version }}/*.tar.gz
+            releases/cli/${{ steps.version.outputs.version }}/*.sha256
+            releases/cli/${{ steps.version.outputs.version }}/*.deb
+            releases/cli/${{ steps.version.outputs.version }}/*.snap
+          draft: false
+          prerelease: false
+
+      - name: Merge to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main
+          git checkout main
+          git merge --no-ff origin/${GITHUB_REF#refs/heads/} -m "Merge release branch for CLI v${{ steps.version.outputs.version }}"
+          git push origin main
+
+      - name: Delete release branch
+        run: |
+          git push origin --delete ${GITHUB_REF#refs/heads/}
