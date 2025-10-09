@@ -99,7 +99,6 @@ install_binary() {
     chmod +x "$INSTALL_DIR/weaverbird"
 
     # Cleanup
-    cd -
     rm -rf "$TMP_DIR"
 
     echo "${GREEN}✓ WeaverBird CLI installed successfully!${NC}"
@@ -119,32 +118,9 @@ verify_installation() {
     fi
 }
 
-# Check if snap is available
-has_snap() {
-    command -v snap >/dev/null 2>&1
-}
-
 # Check if apt is available
 has_apt() {
     command -v apt-get >/dev/null 2>&1
-}
-
-# Install via snap
-install_via_snap() {
-    echo "${BLUE}Installing via Snap...${NC}"
-
-    if ! has_snap; then
-        echo "${RED}Snap is not installed on this system${NC}"
-        return 1
-    fi
-
-    if sudo snap install weaverbird 2>/dev/null; then
-        echo "${GREEN}✓ Installed via Snap${NC}"
-        return 0
-    else
-        echo "${YELLOW}Snap installation failed, trying alternative method...${NC}"
-        return 1
-    fi
 }
 
 # Install via APT (from PPA)
@@ -197,13 +173,11 @@ install_deb_direct() {
         if sudo dpkg -i "$DEB_FILE"; then
             sudo apt-get install -f -y  # Fix dependencies if needed
             echo "${GREEN}✓ Installed DEB package${NC}"
-            cd -
             rm -rf "$TMP_DIR"
             return 0
         fi
     fi
 
-    cd -
     rm -rf "$TMP_DIR"
     echo "${YELLOW}DEB installation failed, trying binary install...${NC}"
     return 1
@@ -212,9 +186,6 @@ install_deb_direct() {
 # Determine best installation method
 choose_install_method() {
     case "$INSTALL_METHOD" in
-        snap)
-            install_via_snap || exit 1
-            ;;
         apt)
             install_via_apt || exit 1
             ;;
@@ -225,13 +196,8 @@ choose_install_method() {
             install_binary
             ;;
         auto)
-            # Try snap first (works on all distros)
-            if has_snap && install_via_snap; then
-                return 0
-            fi
-
-            # Try APT on Debian/Ubuntu
-            if has_apt && install_via_apt; then
+            # Try direct DEB installation first (works on Debian/Ubuntu)
+            if has_apt && install_deb_direct; then
                 return 0
             fi
 
@@ -254,12 +220,12 @@ main() {
     echo "${GREEN}🕊️  WeaverBird CLI Installer${NC}"
     echo ""
     echo "Installation methods available:"
-    echo "  • Snap (recommended) - works on all Linux distros"
-    echo "  • APT - for Debian/Ubuntu via PPA"
-    echo "  • Binary - direct installation"
+    echo "  • DEB (recommended) - for Debian/Ubuntu systems"
+    echo "  • Binary - direct installation for other distros"
     echo ""
     echo "To force a specific method, set INSTALL_METHOD:"
-    echo "  INSTALL_METHOD=snap curl -fsSL ... | sh"
+    echo "  INSTALL_METHOD=deb curl -fsSL ... | sh"
+    echo "  INSTALL_METHOD=binary curl -fsSL ... | sh"
     echo ""
 
     choose_install_method
