@@ -5,19 +5,19 @@ Codename: stable
 Architectures: amd64 arm64
 Components: main
 Description: WeaverBird CLI and tools
-Date: Fri, 10 Oct 2025 08:48:32 +0000
+Date: Fri, 10 Oct 2025 08:59:32 +0000
 MD5Sum:
  d41d8cd98f00b204e9800998ecf8427e                0 main/binary-amd64/Packages
- 72359cabdff5ae1e354d2b40ebcbbcca               29 main/binary-amd64/Packages.gz
+ 1da7ba9fa8adb4d8c78f308061a58cca               29 main/binary-amd64/Packages.gz
  d41d8cd98f00b204e9800998ecf8427e                0 main/binary-arm64/Packages
- 72359cabdff5ae1e354d2b40ebcbbcca               29 main/binary-arm64/Packages.gz
+ cd35db913ed8eb372e758c9a861c73a4               29 main/binary-arm64/Packages.gz
 SHA1:
  da39a3ee5e6b4b0d3255bfef95601890afd80709                0 main/binary-amd64/Packages
- 6990d1d4ea1b521e364f116386a93fe85b77b6fb               29 main/binary-amd64/Packages.gz
+ 89dde3a41ad1f0302ce05f25ba453123003d0a9d               29 main/binary-amd64/Packages.gz
  da39a3ee5e6b4b0d3255bfef95601890afd80709                0 main/binary-arm64/Packages
- 6990d1d4ea1b521e364f116386a93fe85b77b6fb               29 main/binary-arm64/Packages.gz
+ 674f15f61da2c7a7e605db5086c8095e34c099b0               29 main/binary-arm64/Packages.gz
 SHA256:
  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855                0 main/binary-amd64/Packages
- fa4a460df4c278bb6797d4386d99bf7d8499cb09041b4f15eb7ffcf33e32b56b               29 main/binary-amd64/Packages.gz
+ 7928e924c5a18d46a115760c44b55f475de1428c59c204b41823c9a4a4942c92               29 main/binary-amd64/Packages.gz
  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855                0 main/binary-arm64/Packages
- fa4a460df4c278bb6797d4386d99bf7d8499cb09041b4f15eb7ffcf33e32b56b               29 main/binary-arm64/Packages.gz
+ fa93a19e344490368baeb175b2ac6e597d65c7b62870d9919df6335238260053               29 main/binary-arm64/Packages.gz
