@@ -5,19 +5,19 @@ Codename: stable
 Architectures: amd64 arm64
 Components: main
 Description: WeaverBird CLI and tools
-Date: Fri, 10 Oct 2025 08:59:32 +0000
+Date: Fri, 10 Oct 2025 09:29:37 +0000
 MD5Sum:
- d41d8cd98f00b204e9800998ecf8427e                0 main/binary-amd64/Packages
- 1da7ba9fa8adb4d8c78f308061a58cca               29 main/binary-amd64/Packages.gz
- d41d8cd98f00b204e9800998ecf8427e                0 main/binary-arm64/Packages
- cd35db913ed8eb372e758c9a861c73a4               29 main/binary-arm64/Packages.gz
+ 5bb37f582df9f23bd878f7a5546cd51d              670 main/binary-amd64/Packages
+ 8d317ca003158eb88201ceb0362eb28e              444 main/binary-amd64/Packages.gz
+ b40e19a71fdc7b615db01a7a08005ae3              670 main/binary-arm64/Packages
+ 7b8739473dde0623139cd005a7480eaf              443 main/binary-arm64/Packages.gz
 SHA1:
- da39a3ee5e6b4b0d3255bfef95601890afd80709                0 main/binary-amd64/Packages
- 89dde3a41ad1f0302ce05f25ba453123003d0a9d               29 main/binary-amd64/Packages.gz
- da39a3ee5e6b4b0d3255bfef95601890afd80709                0 main/binary-arm64/Packages
- 674f15f61da2c7a7e605db5086c8095e34c099b0               29 main/binary-arm64/Packages.gz
+ 563bf36316c818e5642653b1846d3160dc1e84d4              670 main/binary-amd64/Packages
+ 81641a2b69ba27e24704d8126b7d41a26442cfe2              444 main/binary-amd64/Packages.gz
+ 5bb07efa97e0dee4b8162a9da0c14d4fc6c66b20              670 main/binary-arm64/Packages
+ bc6e15c293a61bc5bc3a4989a61d462d3c1f3628              443 main/binary-arm64/Packages.gz
 SHA256:
- e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855                0 main/binary-amd64/Packages
- 7928e924c5a18d46a115760c44b55f475de1428c59c204b41823c9a4a4942c92               29 main/binary-amd64/Packages.gz
- e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855                0 main/binary-arm64/Packages
- fa93a19e344490368baeb175b2ac6e597d65c7b62870d9919df6335238260053               29 main/binary-arm64/Packages.gz
+ 12d5452a465914065590c414e4ebe01cdf73fecc0de4d88828fe83f50ce2b630              670 main/binary-amd64/Packages
+ 0546747e9b7063fe0f460e8c45bbb52b63660c7d20b6489b7117c12bf20c29c1              444 main/binary-amd64/Packages.gz
+ d2e7a112f513e009e76465679f4949ad6a5c7611833ca0dc4c0eca52088ba363              670 main/binary-arm64/Packages
+ 335dff1f49127899954ed8e73f88a56fef796be566152dd85b2efbb96ac6c8ac              443 main/binary-arm64/Packages.gz

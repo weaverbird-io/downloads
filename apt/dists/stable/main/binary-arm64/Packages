@@ -1,0 +1,19 @@
+Package: weaverbird
+Version: 0.2.3
+Architecture: arm64
+Maintainer: WeaverBird Team <support@weaverbird.io>
+Filename: pool/weaverbird_0.2.3_arm64.deb
+Size: 4801838
+MD5sum: 961b162ecebc29a4ae1b0ca8d9ec23a5
+SHA1: 9af8a355a1ab275b382114d15e61784d060f9440
+SHA256: d808b26cf88378b49a08e73b44b28dca049a1cc4e8447a84675bb1263e199709
+Section: utils
+Priority: optional
+Homepage: https://weaverbird.io
+Description: Infrastructure management CLI
+ WeaverBird CLI is a command-line tool for managing infrastructure,
+ deploying applications, and monitoring servers.
+ .
+ Features include server management, application deployment,
+ infrastructure monitoring, and cluster orchestration.
+
