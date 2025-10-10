@@ -123,7 +123,26 @@ has_apt() {
     command -v apt-get >/dev/null 2>&1
 }
 
-# Install via APT (from PPA)
+# Add WeaverBird APT repository
+add_apt_repository() {
+    echo "${YELLOW}Adding WeaverBird APT repository...${NC}"
+
+    # Add repository to sources list
+    APT_REPO_URL="https://weaverbird-io.github.io/downloads/apt"
+    SOURCES_FILE="/etc/apt/sources.list.d/weaverbird.list"
+
+    echo "deb [trusted=yes] ${APT_REPO_URL} stable main" | sudo tee "$SOURCES_FILE" > /dev/null
+
+    if [ -f "$SOURCES_FILE" ]; then
+        echo "${GREEN}✓ Repository added${NC}"
+        return 0
+    else
+        echo "${RED}Failed to add repository${NC}"
+        return 1
+    fi
+}
+
+# Install via APT (from our repository)
 install_via_apt() {
     echo "${BLUE}Installing via APT...${NC}"
 
@@ -132,23 +151,26 @@ install_via_apt() {
         return 1
     fi
 
-    echo "${YELLOW}Adding WeaverBird PPA...${NC}"
-
-    # Add PPA
-    if ! sudo add-apt-repository -y ppa:weaverbird/stable 2>/dev/null; then
-        echo "${YELLOW}PPA not available yet, trying direct DEB download...${NC}"
+    # Add WeaverBird repository
+    if ! add_apt_repository; then
+        echo "${YELLOW}Failed to add repository, trying direct DEB download...${NC}"
         install_deb_direct
         return $?
     fi
 
-    # Update and install
+    # Update package list
+    echo "${YELLOW}Updating package list...${NC}"
     sudo apt-get update -qq
+
+    # Install weaverbird
     if sudo apt-get install -y weaverbird; then
         echo "${GREEN}✓ Installed via APT${NC}"
+        echo "${GREEN}✓ You will receive automatic updates via apt upgrade${NC}"
         return 0
     else
-        echo "${YELLOW}APT installation failed, trying alternative method...${NC}"
-        return 1
+        echo "${YELLOW}APT installation failed, trying direct DEB download...${NC}"
+        install_deb_direct
+        return $?
     fi
 }
 
@@ -173,6 +195,13 @@ install_deb_direct() {
         if sudo dpkg -i "$DEB_FILE"; then
             sudo apt-get install -f -y  # Fix dependencies if needed
             echo "${GREEN}✓ Installed DEB package${NC}"
+
+            # Add APT repository for future updates
+            if has_apt; then
+                echo "${YELLOW}Adding APT repository for automatic updates...${NC}"
+                add_apt_repository || true  # Don't fail if this doesn't work
+            fi
+
             rm -rf "$TMP_DIR"
             return 0
         fi
@@ -196,8 +225,8 @@ choose_install_method() {
             install_binary
             ;;
         auto)
-            # Try direct DEB installation first (works on Debian/Ubuntu)
-            if has_apt && install_deb_direct; then
+            # Try APT installation first (recommended - gets automatic updates)
+            if has_apt && install_via_apt; then
                 return 0
             fi
 
@@ -220,10 +249,12 @@ main() {
     echo "${GREEN}🕊️  WeaverBird CLI Installer${NC}"
     echo ""
     echo "Installation methods available:"
-    echo "  • DEB (recommended) - for Debian/Ubuntu systems"
-    echo "  • Binary - direct installation for other distros"
+    echo "  • APT (recommended) - for Debian/Ubuntu with automatic updates"
+    echo "  • DEB - direct .deb package installation"
+    echo "  • Binary - for other Linux distributions"
     echo ""
     echo "To force a specific method, set INSTALL_METHOD:"
+    echo "  INSTALL_METHOD=apt curl -fsSL ... | sh"
     echo "  INSTALL_METHOD=deb curl -fsSL ... | sh"
     echo "  INSTALL_METHOD=binary curl -fsSL ... | sh"
     echo ""
