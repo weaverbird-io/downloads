@@ -3,7 +3,7 @@
     "weaverbird-cli": {
       "version": "0.2.3",
       "tag": "cli-v0.2.3",
-      "date": "2025-10-10T09:10:18Z",
+      "date": "2025-10-10T09:21:15Z",
       "notes": "WeaverBird CLI v0.2.3\n\n- **Daemon mode**: Added `weaverbird daemon start/stop/status` commands\n- **Systemd integration**: Automatic service installation and management\n- **Background agent**: Run WeaverBird as a system service with root privileges\n\n- Downloads site now prioritizes DEB packages over tarballs\n- Added copy button feedback (shows \"✓ Copied!\" for 2 seconds)\n- Added navigation back to home page from downloads site\n- Removed snap installation method (requires classic confinement)\n- Install script no longer prints temp directory paths\n\nWeaverBird can now run as a privileged system service to manage infrastructure:\n- Install system software (Docker, etc.)\n- Manage services and configurations\n- Connect to WeaverBird platform as a persistent agent\n\n```bash\nsudo dpkg -i weaverbird_0.2.3_amd64.deb\n\nsudo weaverbird generate-pair\n\nsudo systemctl enable --now weaverbird-agent\n```",
       "files": [
         "weaverbird-cli-linux-amd64.tar.gz",
