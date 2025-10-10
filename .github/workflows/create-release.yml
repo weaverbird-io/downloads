@@ -121,25 +121,40 @@ jobs:
 
           # Download all .deb files from all CLI releases
           echo "Downloading .deb files from all releases..."
-          for release in $(gh release list --repo weaverbird-io/downloads --limit 100 | grep "^cli-v" | awk '{print $1}'); do
+          DEB_COUNT=0
+          for release in $(gh release list --repo weaverbird-io/downloads --limit 100 | grep "cli-v" | awk '{print $3}'); do
             version=${release#cli-v}
             echo "  Checking $release..."
 
-            # Download amd64 deb if it exists
-            if gh release download "$release" --repo weaverbird-io/downloads --pattern "weaverbird_${version}_amd64.deb" --dir apt/pool --clobber 2>/dev/null; then
+            # Download amd64 deb
+            if gh release download "$release" --repo weaverbird-io/downloads --pattern "weaverbird_${version}_amd64.deb" --dir apt/pool --clobber; then
               echo "    ✓ Downloaded weaverbird_${version}_amd64.deb"
+              DEB_COUNT=$((DEB_COUNT + 1))
+            else
+              echo "    ✗ Failed to download weaverbird_${version}_amd64.deb"
             fi
 
-            # Download arm64 deb if it exists
-            if gh release download "$release" --repo weaverbird-io/downloads --pattern "weaverbird_${version}_arm64.deb" --dir apt/pool --clobber 2>/dev/null; then
+            # Download arm64 deb
+            if gh release download "$release" --repo weaverbird-io/downloads --pattern "weaverbird_${version}_arm64.deb" --dir apt/pool --clobber; then
               echo "    ✓ Downloaded weaverbird_${version}_arm64.deb"
+              DEB_COUNT=$((DEB_COUNT + 1))
+            else
+              echo "    ✗ Failed to download weaverbird_${version}_arm64.deb"
             fi
           done
 
+          # Check if we downloaded any packages
+          if [ "$DEB_COUNT" -eq 0 ]; then
+            echo "ERROR: No .deb files were downloaded!"
+            exit 1
+          fi
+
+          echo "Downloaded $DEB_COUNT .deb files"
+
           # Generate Packages files for each architecture
           echo "Generating Packages files..."
-          (cd apt && dpkg-scanpackages --arch amd64 pool/ /dev/null > dists/stable/main/binary-amd64/Packages 2>/dev/null || true)
-          (cd apt && dpkg-scanpackages --arch arm64 pool/ /dev/null > dists/stable/main/binary-arm64/Packages 2>/dev/null || true)
+          (cd apt && dpkg-scanpackages --arch amd64 pool/ /dev/null > dists/stable/main/binary-amd64/Packages)
+          (cd apt && dpkg-scanpackages --arch arm64 pool/ /dev/null > dists/stable/main/binary-arm64/Packages)
 
           # Compress Packages files
           gzip -9 -k -f apt/dists/stable/main/binary-amd64/Packages
