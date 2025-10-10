@@ -102,9 +102,20 @@ jobs:
       - name: Update APT repository
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          GH_TOKEN: ${{ github.token }}
+          RELEASE_BRANCH: ${{ github.ref_name }}
         run: |
           echo "Updating APT repository on gh-pages branch..."
+
+          # Copy .deb files from release branch before switching branches
+          echo "Copying .deb files from release branch..."
+          mkdir -p /tmp/debs
+          cp releases/cli/${VERSION}/*.deb /tmp/debs/ || {
+            echo "ERROR: No .deb files found in releases/cli/${VERSION}/"
+            exit 1
+          }
+          DEB_COUNT=$(ls -1 /tmp/debs/*.deb 2>/dev/null | wc -l)
+          echo "Found $DEB_COUNT .deb files"
+          ls -lh /tmp/debs/
 
           # Fetch gh-pages branch
           git fetch origin gh-pages
@@ -119,37 +130,10 @@ jobs:
           mkdir -p apt/dists/stable/main/binary-amd64
           mkdir -p apt/dists/stable/main/binary-arm64
 
-          # Download all .deb files from all CLI releases
-          echo "Downloading .deb files from all releases..."
-          DEB_COUNT=0
-          for release in $(gh release list --repo weaverbird-io/downloads --limit 100 | grep "cli-v" | awk '{print $3}'); do
-            version=${release#cli-v}
-            echo "  Checking $release..."
-
-            # Download amd64 deb
-            if gh release download "$release" --repo weaverbird-io/downloads --pattern "weaverbird_${version}_amd64.deb" --dir apt/pool --clobber; then
-              echo "    ✓ Downloaded weaverbird_${version}_amd64.deb"
-              DEB_COUNT=$((DEB_COUNT + 1))
-            else
-              echo "    ✗ Failed to download weaverbird_${version}_amd64.deb"
-            fi
-
-            # Download arm64 deb
-            if gh release download "$release" --repo weaverbird-io/downloads --pattern "weaverbird_${version}_arm64.deb" --dir apt/pool --clobber; then
-              echo "    ✓ Downloaded weaverbird_${version}_arm64.deb"
-              DEB_COUNT=$((DEB_COUNT + 1))
-            else
-              echo "    ✗ Failed to download weaverbird_${version}_arm64.deb"
-            fi
-          done
-
-          # Check if we downloaded any packages
-          if [ "$DEB_COUNT" -eq 0 ]; then
-            echo "ERROR: No .deb files were downloaded!"
-            exit 1
-          fi
-
-          echo "Downloaded $DEB_COUNT .deb files"
+          # Copy .deb files to APT pool
+          echo "Adding .deb files to APT repository..."
+          cp /tmp/debs/*.deb apt/pool/
+          ls -lh apt/pool/
 
           # Generate Packages files for each architecture
           echo "Generating Packages files..."
