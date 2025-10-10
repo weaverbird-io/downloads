@@ -8,7 +8,7 @@
       "color": "weaver-primary",
       "repo": "weaverbird-io/downloads",
       "platforms": ["linux-amd64", "linux-arm64"],
-      "installCommand": "curl -fsSL https://weaverbird-io.github.io/downloads/install.sh | sh",
+      "installCommand": "curl -fsSL https://weaverbird-io.github.io/downloads/install-cli.sh | sh",
       "featured": true
     }
   ]
