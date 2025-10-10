@@ -56,7 +56,11 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
           NOTES: ${{ steps.release-info.outputs.notes }}
+          RELEASE_BRANCH: ${{ github.ref_name }}
         run: |
+          # Get files list from current release branch (before switching to master)
+          FILES_JSON=$(cd releases/cli/${VERSION} && ls -1 | grep -v release-info.json | jq -R . | jq -s .)
+
           # Fetch and checkout master
           git fetch origin master
           git checkout master
@@ -68,7 +72,7 @@ jobs:
             "tag": "cli-v${VERSION}",
             "date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "notes": $(echo "$NOTES" | jq -Rs .),
-            "files": $(cd releases/cli/${VERSION} && ls -1 | grep -v release-info.json | jq -R . | jq -s .),
+            "files": ${FILES_JSON},
             "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/cli-v${VERSION}"
           }
           EOF
