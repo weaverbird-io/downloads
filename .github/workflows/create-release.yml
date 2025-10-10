@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout downloads repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Extract version from branch name
         id: version
@@ -49,6 +51,22 @@ jobs:
             releases/cli/${{ steps.version.outputs.version }}/*.snap
           draft: false
           prerelease: false
+
+      - name: Merge latest.json to master
+        run: |
+          # Fetch and checkout master
+          git fetch origin master
+          git checkout master
+
+          # Copy latest.json from release branch
+          git checkout ${GITHUB_REF#refs/heads/} -- latest.json
+
+          # Commit to master
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add latest.json
+          git commit -m "Update latest.json for v${{ steps.version.outputs.version }}"
+          git push origin master
 
       - name: Delete release branch
         run: |
