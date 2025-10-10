@@ -65,23 +65,38 @@ jobs:
           git fetch origin master
           git checkout master
 
-          # Create latest.json from release info
-          cat > latest.json <<EOF
-          {
-            "version": "${VERSION}",
-            "tag": "cli-v${VERSION}",
-            "date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "notes": $(echo "$NOTES" | jq -Rs .),
-            "files": ${FILES_JSON},
-            "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/cli-v${VERSION}"
-          }
-          EOF
+          # Read existing latest.json (or create empty structure if doesn't exist)
+          if [ -f latest.json ]; then
+            EXISTING_JSON=$(cat latest.json)
+          else
+            EXISTING_JSON='{"products":{}}'
+          fi
+
+          # Update the weaverbird-cli product in the existing JSON
+          UPDATED_JSON=$(echo "$EXISTING_JSON" | jq \
+            --arg version "${VERSION}" \
+            --arg tag "cli-v${VERSION}" \
+            --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg notes "$NOTES" \
+            --argjson files "${FILES_JSON}" \
+            --arg downloadUrl "https://github.com/weaverbird-io/downloads/releases/download/cli-v${VERSION}" \
+            '.products["weaverbird-cli"] = {
+              version: $version,
+              tag: $tag,
+              date: $date,
+              notes: $notes,
+              files: $files,
+              downloadUrl: $downloadUrl
+            }')
+
+          # Write updated JSON back to latest.json
+          echo "$UPDATED_JSON" > latest.json
 
           # Commit to master
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add latest.json
-          git commit -m "Update latest.json for v${VERSION}"
+          git commit -m "Update latest.json for weaverbird-cli v${VERSION}"
           git push origin master
 
       - name: Delete release branch
