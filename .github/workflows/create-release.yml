@@ -61,6 +61,14 @@ jobs:
           # Get files list from current release branch (before switching to master)
           FILES_JSON=$(cd releases/cli/${VERSION} && ls -1 | grep -v release-info.json | jq -R . | jq -s .)
 
+          # Copy .deb files for APT repository (before switching branches)
+          echo "Copying .deb files for APT repository..."
+          mkdir -p /tmp/apt-debs
+          cp releases/cli/${VERSION}/*.deb /tmp/apt-debs/ || {
+            echo "WARNING: No .deb files found in releases/cli/${VERSION}/"
+          }
+          ls -lh /tmp/apt-debs/ || true
+
           # Fetch and checkout master
           git fetch origin master
           git checkout master
@@ -102,20 +110,18 @@ jobs:
       - name: Update APT repository
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          RELEASE_BRANCH: ${{ github.ref_name }}
         run: |
           echo "Updating APT repository on gh-pages branch..."
 
-          # Copy .deb files from release branch before switching branches
-          echo "Copying .deb files from release branch..."
-          mkdir -p /tmp/debs
-          cp releases/cli/${VERSION}/*.deb /tmp/debs/ || {
-            echo "ERROR: No .deb files found in releases/cli/${VERSION}/"
+          # Check if .deb files were copied in previous step
+          if [ ! -d /tmp/apt-debs ] || [ -z "$(ls -A /tmp/apt-debs 2>/dev/null)" ]; then
+            echo "ERROR: No .deb files found in /tmp/apt-debs/"
             exit 1
-          }
-          DEB_COUNT=$(ls -1 /tmp/debs/*.deb 2>/dev/null | wc -l)
-          echo "Found $DEB_COUNT .deb files"
-          ls -lh /tmp/debs/
+          fi
+
+          DEB_COUNT=$(ls -1 /tmp/apt-debs/*.deb 2>/dev/null | wc -l)
+          echo "Found $DEB_COUNT .deb files to add to APT repository"
+          ls -lh /tmp/apt-debs/
 
           # Fetch gh-pages branch
           git fetch origin gh-pages
@@ -132,7 +138,7 @@ jobs:
 
           # Copy .deb files to APT pool
           echo "Adding .deb files to APT repository..."
-          cp /tmp/debs/*.deb apt/pool/
+          cp /tmp/apt-debs/*.deb apt/pool/
           ls -lh apt/pool/
 
           # Generate Packages files for each architecture
