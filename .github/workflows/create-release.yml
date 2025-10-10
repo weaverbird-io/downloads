@@ -102,6 +102,7 @@ jobs:
       - name: Update APT repository
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Updating APT repository on gh-pages branch..."
 
