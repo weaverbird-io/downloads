@@ -99,6 +99,152 @@ jobs:
           git commit -m "Update latest.json for weaverbird-cli v${VERSION}"
           git push origin master
 
+      - name: Update APT repository
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          echo "Updating APT repository on gh-pages branch..."
+
+          # Fetch gh-pages branch
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          # Install dpkg-dev for dpkg-scanpackages
+          sudo apt-get update -qq
+          sudo apt-get install -y dpkg-dev
+
+          # Create APT directory structure
+          mkdir -p apt/pool
+          mkdir -p apt/dists/stable/main/binary-amd64
+          mkdir -p apt/dists/stable/main/binary-arm64
+
+          # Download all .deb files from all CLI releases
+          echo "Downloading .deb files from all releases..."
+          for release in $(gh release list --repo weaverbird-io/downloads --limit 100 | grep "^cli-v" | awk '{print $1}'); do
+            version=${release#cli-v}
+            echo "  Checking $release..."
+
+            # Download amd64 deb if it exists
+            if gh release download "$release" --repo weaverbird-io/downloads --pattern "weaverbird_${version}_amd64.deb" --dir apt/pool --clobber 2>/dev/null; then
+              echo "    ✓ Downloaded weaverbird_${version}_amd64.deb"
+            fi
+
+            # Download arm64 deb if it exists
+            if gh release download "$release" --repo weaverbird-io/downloads --pattern "weaverbird_${version}_arm64.deb" --dir apt/pool --clobber 2>/dev/null; then
+              echo "    ✓ Downloaded weaverbird_${version}_arm64.deb"
+            fi
+          done
+
+          # Generate Packages files for each architecture
+          echo "Generating Packages files..."
+          (cd apt && dpkg-scanpackages --arch amd64 pool/ /dev/null > dists/stable/main/binary-amd64/Packages 2>/dev/null || true)
+          (cd apt && dpkg-scanpackages --arch arm64 pool/ /dev/null > dists/stable/main/binary-arm64/Packages 2>/dev/null || true)
+
+          # Compress Packages files
+          gzip -9 -k -f apt/dists/stable/main/binary-amd64/Packages
+          gzip -9 -k -f apt/dists/stable/main/binary-arm64/Packages
+
+          # Generate Release file
+          cat > apt/dists/stable/Release <<EOF
+          Origin: WeaverBird
+          Label: WeaverBird APT Repository
+          Suite: stable
+          Codename: stable
+          Architectures: amd64 arm64
+          Components: main
+          Description: WeaverBird CLI and tools
+          Date: $(date -R -u)
+          EOF
+
+          # Add file checksums to Release
+          (cd apt/dists/stable && {
+              echo "MD5Sum:"
+              find main -type f 2>/dev/null | while read f; do
+                  size=$(stat -c%s "$f")
+                  md5=$(md5sum "$f" | awk '{print $1}')
+                  printf " %s %16d %s\n" "$md5" "$size" "$f"
+              done
+              echo "SHA1:"
+              find main -type f 2>/dev/null | while read f; do
+                  size=$(stat -c%s "$f")
+                  sha1=$(sha1sum "$f" | awk '{print $1}')
+                  printf " %s %16d %s\n" "$sha1" "$size" "$f"
+              done
+              echo "SHA256:"
+              find main -type f 2>/dev/null | while read f; do
+                  size=$(stat -c%s "$f")
+                  sha256=$(sha256sum "$f" | awk '{print $1}')
+                  printf " %s %16d %s\n" "$sha256" "$size" "$f"
+              done
+          }) >> apt/dists/stable/Release
+
+          # Copy Release to InRelease (unsigned for now)
+          cp apt/dists/stable/Release apt/dists/stable/InRelease
+
+          # Create/update README for APT repo
+          cat > apt/README.md <<'APTREADME'
+          # WeaverBird APT Repository
+
+          Official APT repository for WeaverBird CLI and tools.
+
+          ## Quick Install
+
+          ```bash
+          # Add repository
+          echo "deb [trusted=yes] https://weaverbird-io.github.io/downloads/apt stable main" | sudo tee /etc/apt/sources.list.d/weaverbird.list
+
+          # Update and install
+          sudo apt update
+          sudo apt install weaverbird
+          ```
+
+          **Note:** Using `[trusted=yes]` as repository is not yet GPG-signed. GPG signing coming soon.
+
+          ## Auto-Updates
+
+          Once installed, receive updates automatically:
+
+          ```bash
+          sudo apt update && sudo apt upgrade
+          ```
+
+          ## Available Packages
+
+          - **weaverbird** - WeaverBird CLI Agent for server management
+
+          ## Supported Architectures
+
+          - amd64 (x86_64)
+          - arm64 (aarch64)
+
+          ---
+
+          Visit https://weaverbird.io for more information.
+          APTREADME
+
+          # Commit and push to gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add apt/
+
+          if git diff --staged --quiet; then
+            echo "No changes to APT repository"
+          else
+            git commit -m "Update APT repository for weaverbird-cli v${VERSION}
+
+          - Updated repository metadata
+          - Added/updated .deb packages
+
+          Repository contains all weaverbird-cli releases.
+          Access at: https://weaverbird-io.github.io/downloads/apt"
+
+            git push origin gh-pages
+            echo "✅ APT repository updated successfully"
+          fi
+
+          # Switch back to release branch for cleanup
+          git checkout ${GITHUB_REF#refs/heads/}
+
       - name: Delete release branch
         run: |
           git push origin --delete ${GITHUB_REF#refs/heads/}
