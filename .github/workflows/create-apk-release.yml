@@ -61,12 +61,32 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release (versioned)
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           name: ${{ steps.meta.outputs.name }} v${{ steps.meta.outputs.version }}
           body: ${{ steps.meta.outputs.notes }}
+          files: |
+            ${{ steps.meta.outputs.dir }}/*.apk
+            ${{ steps.meta.outputs.dir }}/*.sha256
+          draft: false
+          prerelease: false
+
+      # Stable per-product "latest" release: a fixed tag <product>-latest whose
+      # asset filenames never change, so a download link set once always serves
+      # the newest build. (The repo-wide /releases/latest is WRONG here — it's
+      # multi-product, so it points at whichever product released most recently.)
+      # This is what platform DomainApp `url` rows point at.
+      - name: Update GitHub Release (<product>-latest)
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.meta.outputs.product }}-latest
+          name: ${{ steps.meta.outputs.name }} (latest)
+          body: |
+            Always the newest ${{ steps.meta.outputs.name }} build. Currently v${{ steps.meta.outputs.version }}.
+
+            ${{ steps.meta.outputs.notes }}
           files: |
             ${{ steps.meta.outputs.dir }}/*.apk
             ${{ steps.meta.outputs.dir }}/*.sha256
@@ -89,6 +109,10 @@ jobs:
 
           if [ -f latest.json ]; then EXISTING=$(cat latest.json); else EXISTING='{"products":{}}'; fi
 
+          # Primary APK filename (stable across versions) → build the stable link.
+          PRIMARY_APK=$(cd "$DIR" && ls -1 *.apk | head -1)
+          BASE="https://github.com/weaverbird-io/downloads/releases/download"
+
           UPDATED=$(echo "$EXISTING" | jq \
             --arg product "$PRODUCT" \
             --arg version "$VERSION" \
@@ -97,11 +121,16 @@ jobs:
             --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --arg notes "$NOTES" \
             --argjson files "$FILES_JSON" \
-            --arg downloadUrl "https://github.com/weaverbird-io/downloads/releases/download/${TAG}" \
+            --arg downloadUrl "${BASE}/${TAG}" \
+            --arg apk "$PRIMARY_APK" \
+            --arg latestTag "${PRODUCT}-latest" \
+            --arg latestDownloadUrl "${BASE}/${PRODUCT}-latest/${PRIMARY_APK}" \
             --arg kind "android" \
             '.products[$product] = {
               name: $name, kind: $kind, version: $version, tag: $tag,
-              date: $date, notes: $notes, files: $files, downloadUrl: $downloadUrl
+              date: $date, notes: $notes, files: $files, apk: $apk,
+              downloadUrl: $downloadUrl,
+              latestTag: $latestTag, latestDownloadUrl: $latestDownloadUrl
             }')
 
           echo "$UPDATED" > latest.json
