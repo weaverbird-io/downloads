@@ -14,6 +14,19 @@
         "weaverbird_0.2.3_arm64.deb"
       ],
       "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/cli-v0.2.3"
+    },
+    "kijilimo": {
+      "name": "Kijilimo Field",
+      "kind": "android",
+      "version": "0.1.0",
+      "tag": "kijilimo-v0.1.0",
+      "date": "2026-07-24T04:32:13Z",
+      "notes": "Kijilimo Field v0.1.0 — debug build for testing. Install by tapping the .apk on your phone (enable \"install unknown apps\" once).",
+      "files": [
+        "app-prod-release.apk",
+        "app-prod-release.apk.sha256"
+      ],
+      "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kijilimo-v0.1.0"
     }
   }
 }
