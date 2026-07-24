@@ -1,0 +1,8 @@
+{
+  "product": "mjengo",
+  "name": "Mjengo Site Access",
+  "version": "0.2.0",
+  "icon": "👷",
+  "appId": "com.weaverbird.mjengo",
+  "notes": "Mjengo Site Access v0.2.0 — signed release build. Install by tapping the .apk on your phone (enable \"install unknown apps\" once)."
+}
