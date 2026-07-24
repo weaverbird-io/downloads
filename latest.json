@@ -27,6 +27,22 @@
         "app-prod-release.apk.sha256"
       ],
       "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kijilimo-v0.1.0"
+    },
+    "mjengo": {
+      "name": "Mjengo Site Access",
+      "kind": "android",
+      "version": "0.2.0",
+      "tag": "mjengo-v0.2.0",
+      "date": "2026-07-24T05:12:00Z",
+      "notes": "Mjengo Site Access v0.2.0 — signed release build. Install by tapping the .apk on your phone (enable \"install unknown apps\" once).",
+      "files": [
+        "app-release.apk",
+        "app-release.apk.sha256"
+      ],
+      "apk": "app-release.apk",
+      "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/mjengo-v0.2.0",
+      "latestTag": "mjengo-latest",
+      "latestDownloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/mjengo-latest/app-release.apk"
     }
   }
 }
