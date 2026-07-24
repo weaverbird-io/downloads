@@ -102,16 +102,16 @@ jobs:
           TAG: ${{ steps.meta.outputs.tag }}
           DIR: ${{ steps.meta.outputs.dir }}
         run: |
+          # Read from the release branch BEFORE switching to master — $DIR only
+          # exists here; after checkout master it's gone.
           FILES_JSON=$(cd "$DIR" && ls -1 | grep -v release-info.json | jq -R . | jq -s .)
+          PRIMARY_APK=$(cd "$DIR" && ls -1 *.apk | head -1)
+          BASE="https://github.com/weaverbird-io/downloads/releases/download"
 
           git fetch origin master
           git checkout master
 
           if [ -f latest.json ]; then EXISTING=$(cat latest.json); else EXISTING='{"products":{}}'; fi
-
-          # Primary APK filename (stable across versions) → build the stable link.
-          PRIMARY_APK=$(cd "$DIR" && ls -1 *.apk | head -1)
-          BASE="https://github.com/weaverbird-io/downloads/releases/download"
 
           UPDATED=$(echo "$EXISTING" | jq \
             --arg product "$PRODUCT" \
@@ -138,7 +138,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add latest.json
           git commit -m "Update latest.json for ${PRODUCT} v${VERSION}"
-          git push origin master
+          # Concurrent APK releases can each push master — retry on rejection.
+          for i in 1 2 3 4 5; do
+            git push origin master && break
+            echo "push rejected, rebasing (attempt $i)"; git pull --rebase origin master
+          done
 
       - name: Delete release branch
         run: git push origin --delete ${GITHUB_REF#refs/heads/}
