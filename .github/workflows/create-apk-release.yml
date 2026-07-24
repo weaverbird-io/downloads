@@ -1,0 +1,115 @@
+name: Create APK Release
+
+# Publishes an Android APK release for ANY Weaverbird app, mirroring the CLI's
+# create-release.yml pattern. The private monorepo builds the APK(s) and pushes
+# a branch `apk-release-<product>-<version>` here with the files staged under
+#   releases/apk/<product>/<version>/
+# plus a release-info.json describing the product. This workflow turns that into
+# a public GitHub Release + a latest.json catalog entry, then deletes the branch.
+#
+# This is how kijilimo / sojaly-id / mjengo APKs reach testers: a public Release
+# on THIS public repo gives a tap-to-install github.com link even though the app
+# source lives in a PRIVATE repo. Adding a new app = the monorepo pushes another
+# apk-release-<newapp>-<version> branch; no change needed here.
+#
+# release-info.json (staged next to the .apk files):
+#   { "product": "kijilimo", "name": "Kijilimo Field", "version": "0.1.0",
+#     "notes": "markdown release notes", "icon": "🌱", "appId": "com.weaverbird.kijilimo" }
+
+on:
+  push:
+    branches:
+      - 'apk-release-*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create APK GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout downloads repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Branch: apk-release-<product>-<version>  →  product + version.
+      # Product may contain no '-'; version is everything after the last
+      # 'apk-release-<product>-'. We read them from release-info.json to be safe,
+      # falling back to the branch name only for locating the staging dir.
+      - name: Resolve product + version
+        id: meta
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          REST=${BRANCH#apk-release-}                     # <product>-<version>
+          # find the staged release-info.json (there is exactly one)
+          INFO=$(find releases/apk -name release-info.json | head -1)
+          if [ -z "$INFO" ]; then echo "no release-info.json staged"; exit 1; fi
+          PRODUCT=$(jq -r '.product' "$INFO")
+          VERSION=$(jq -r '.version' "$INFO")
+          NAME=$(jq -r '.name' "$INFO")
+          DIR=$(dirname "$INFO")
+          echo "product=$PRODUCT" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+          echo "tag=${PRODUCT}-v${VERSION}" >> "$GITHUB_OUTPUT"
+          {
+            echo "notes<<EOF"
+            jq -r '.notes' "$INFO"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.name }} v${{ steps.meta.outputs.version }}
+          body: ${{ steps.meta.outputs.notes }}
+          files: |
+            ${{ steps.meta.outputs.dir }}/*.apk
+            ${{ steps.meta.outputs.dir }}/*.sha256
+          draft: false
+          prerelease: false
+
+      - name: Update latest.json on master
+        env:
+          PRODUCT: ${{ steps.meta.outputs.product }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          NAME: ${{ steps.meta.outputs.name }}
+          NOTES: ${{ steps.meta.outputs.notes }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          DIR: ${{ steps.meta.outputs.dir }}
+        run: |
+          FILES_JSON=$(cd "$DIR" && ls -1 | grep -v release-info.json | jq -R . | jq -s .)
+
+          git fetch origin master
+          git checkout master
+
+          if [ -f latest.json ]; then EXISTING=$(cat latest.json); else EXISTING='{"products":{}}'; fi
+
+          UPDATED=$(echo "$EXISTING" | jq \
+            --arg product "$PRODUCT" \
+            --arg version "$VERSION" \
+            --arg name "$NAME" \
+            --arg tag "$TAG" \
+            --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg notes "$NOTES" \
+            --argjson files "$FILES_JSON" \
+            --arg downloadUrl "https://github.com/weaverbird-io/downloads/releases/download/${TAG}" \
+            --arg kind "android" \
+            '.products[$product] = {
+              name: $name, kind: $kind, version: $version, tag: $tag,
+              date: $date, notes: $notes, files: $files, downloadUrl: $downloadUrl
+            }')
+
+          echo "$UPDATED" > latest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add latest.json
+          git commit -m "Update latest.json for ${PRODUCT} v${VERSION}"
+          git push origin master
+
+      - name: Delete release branch
+        run: git push origin --delete ${GITHUB_REF#refs/heads/}
