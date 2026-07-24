@@ -43,6 +43,22 @@
       "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/mjengo-v0.2.0",
       "latestTag": "mjengo-latest",
       "latestDownloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/mjengo-latest/app-release.apk"
+    },
+    "sojaly-id": {
+      "name": "Sojaly ID",
+      "kind": "android",
+      "version": "0.2.0",
+      "tag": "sojaly-id-v0.2.0",
+      "date": "2026-07-24T06:05:06Z",
+      "notes": "Sojaly ID v0.2.0 — signed release build. Install by tapping the .apk on your phone (enable \"install unknown apps\" once).",
+      "files": [
+        "app-standard-release.apk",
+        "app-standard-release.apk.sha256"
+      ],
+      "apk": "app-standard-release.apk",
+      "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/sojaly-id-v0.2.0",
+      "latestTag": "sojaly-id-latest",
+      "latestDownloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/sojaly-id-latest/app-standard-release.apk"
     }
   }
 }
