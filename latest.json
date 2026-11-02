@@ -66,16 +66,16 @@
     "kenyard": {
       "name": "KenYard",
       "kind": "android",
-      "version": "0.1.0",
-      "tag": "kenyard-v0.1.0",
-      "date": "2026-11-02T05:17:39Z",
-      "notes": "KenYard v0.1.0 — signed release build. Install by tapping the .apk on your phone (enable \"install unknown apps\" once).",
+      "version": "0.1.1",
+      "tag": "kenyard-v0.1.1",
+      "date": "2026-11-02T05:57:26Z",
+      "notes": "KenYard v0.1.1 — signed release build. Install by tapping the .apk on your phone (enable \"install unknown apps\" once).",
       "files": [
         "app-prod-release.apk",
         "app-prod-release.apk.sha256"
       ],
       "apk": "app-prod-release.apk",
-      "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kenyard-v0.1.0",
+      "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kenyard-v0.1.1",
       "latestTag": "kenyard-latest",
       "latestDownloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kenyard-latest/app-prod-release.apk"
     }
