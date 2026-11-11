@@ -94,6 +94,22 @@
       "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kijishule-v0.1.1",
       "latestTag": "kijishule-latest",
       "latestDownloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kijishule-latest/app-prod-release.apk"
+    },
+    "kijiwelfare": {
+      "name": "KijiWelfare",
+      "kind": "android",
+      "version": "0.1.1",
+      "tag": "kijiwelfare-v0.1.1",
+      "date": "2026-11-11T21:17:29Z",
+      "notes": "KijiWelfare v0.1.1 — signed release build. Install by tapping the .apk on your phone (enable \"install unknown apps\" once).",
+      "files": [
+        "app-prod-release.apk",
+        "app-prod-release.apk.sha256"
+      ],
+      "apk": "app-prod-release.apk",
+      "downloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kijiwelfare-v0.1.1",
+      "latestTag": "kijiwelfare-latest",
+      "latestDownloadUrl": "https://github.com/weaverbird-io/downloads/releases/download/kijiwelfare-latest/app-prod-release.apk"
     }
   }
 }
